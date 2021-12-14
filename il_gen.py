@@ -66,8 +66,8 @@ class ILCode:
 
         if il_value_dst.musictype == musictypes.piece:
             il_value_dst.py_value = music.piece(*il_value_src.py_value)
-            for track in il_value_dst.py_value.tracks:
-                print(track.details())
+            # for track in il_value_dst.py_value.tracks:
+            #     print(track.details())
         else:
             if il_value_src.literal:
                 if isinstance(il_value_src.py_value, list):

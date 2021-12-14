@@ -7,7 +7,7 @@ from musicode.musictypes import (ArrayMusicType)
 from musicode.errors import CompilerError
 from musicode.il_gen import ILValue
 from musicode.tree.utils import DirectLValue, report_err
-
+from musicode.music import music
 
 class Node:
     """Base class for representing a single node in the AST.
@@ -121,6 +121,11 @@ class DeclInfo:
 
         if self.init:
             self.do_init(var, il_code, symbol_table, c)
+        elif isinstance(self.musictype, ArrayMusicType):
+            if var.musictype.el == musictypes.chord:
+                var.py_value = [music.chord([]) for _ in range(var.musictype.n)]
+            elif var.musictype.el == musictypes.note:
+                var.py_value = [music.note('C') for _ in range(var.musictype.n)]
 
     def do_init(self, var, il_code, symbol_table, c):
 
@@ -186,11 +191,11 @@ class Declaration(Node):
     def make_musictype(self, decl, prev_ctype):
 
         if isinstance(decl, decl_nodes.Array):
-            new_ctype = self._generate_array_musictype(decl, prev_ctype)
+            new_musictype = self._generate_array_musictype(decl, prev_ctype)
         elif isinstance(decl, decl_nodes.Identifier):
             return prev_ctype, decl.identifier
 
-        return self.make_musictype(decl.child, new_ctype)
+        return self.make_musictype(decl.child, new_musictype)
 
     def _generate_array_musictype(self, decl, prev_ctype):
         """Generate a function ctype from a given a decl_node."""

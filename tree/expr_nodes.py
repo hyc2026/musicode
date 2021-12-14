@@ -796,15 +796,13 @@ class ArraySubsc(_LExprNode):
 
     def _lvalue(self, il_code, symbol_table, c):
 
-        head_lv = self.head.lvalue(il_code, symbol_table, c)
-        arg_lv = self.arg.lvalue(il_code, symbol_table, c)
+        head_v = self.head.make_il(il_code, symbol_table, c)
+        arg_v = self.arg.make_il(il_code, symbol_table, c)
 
-        head_v = head_lv.il_value
-        arg_v = arg_lv.il_value
 
-        out = ILValue(musictypes.python)
+        out = ILValue(head_v.musictype.el)
         # perform constant folding
-        out.py_value = head_v[arg_v]
+        out.py_value = head_v.py_value[arg_v.py_value]
         return DirectLValue(out)
 
 
@@ -823,7 +821,7 @@ class PlayExpr(_RExprNode):
 
         dummy_il_code = il_code.copy()
         expr = self.expr.make_il_raw(dummy_il_code, symbol_table, c)
-        music.play(expr.py_value)
+        music.write(expr.py_value)
         return expr
 
 
