@@ -14,12 +14,7 @@ statement::= labeled_statement | compound_statement | expression_statement | sel
 """
 @add_range
 def parse_statement(index):
-    """Parse a statement.
 
-    Try each possible type of statement, catching/logging exceptions upon
-    parse failures. On the last try, raise the exception on to the caller.
-
-    """
     for func in (
             parse_break,
             parse_continue,
@@ -37,12 +32,7 @@ block::= "{" declaration #declaration #statement "}"
 """
 @add_range
 def parse_compound_statement(index):
-    """Parse a compound statement.
 
-    A compound statement is a collection of several
-    statements/declarations, enclosed in braces.
-
-    """
     p.symbols.new_scope()
     index = match_token(index, token_kinds.open_brack, ParserError.GOT)
 
@@ -125,11 +115,7 @@ expression_statement::= expression ";"
 """
 @add_range
 def parse_expr_statement(index):
-    """Parse a statement that is an expression.
 
-    Ex: a = b + 1
-
-    """
     if token_is(index, token_kinds.semicolon):
         return nodes.EmptyStatement(), index + 1
 

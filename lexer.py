@@ -1,9 +1,4 @@
-"""Objects for the lexing phase of the compiler.
 
-The lexing phase takes the entire contents of a raw input file and
-generates a flat list of tokens present in that input file.
-
-"""
 import re
 
 import musicode.token_kinds as token_kinds
@@ -12,12 +7,7 @@ from musicode.tokens import Token
 from musicode.token_kinds import symbol_kinds, keyword_kinds
 
 class Tagged:
-    """Class representing tagged characters.
 
-    c (char) - the character that is tagged
-    p (Position) - position of the tagged character
-    r (Range) - a length-one range for the character
-    """
 
     def __init__(self, c, p):
         """Initialize object."""
@@ -27,12 +17,7 @@ class Tagged:
 
 
 def tokenize(code, filename):
-    """Convert given code into a flat list of Tokens.
 
-    lines - List of list of Tagged objects, where each embedded list is a
-    separate line in the input program.
-    return - List of Token objects.
-    """
     # Store tokens as they are generated
     tokens = []
 
@@ -51,15 +36,7 @@ def tokenize(code, filename):
 
 
 def split_to_tagged_lines(text, filename):
-    """Split the input text into tagged lines.
 
-    No newline escaping or other preprocessing is done by this function.
-
-    text (str) - Input file contents as a string.
-    filename (str) - Input file name.
-    return - Tagged lines. List of list of Tagged objects, where each second
-    order list is a separate line in the input progam. No newline characters.
-    """
     lines = text.splitlines()
     tagged_lines = []
     for line_num, line in enumerate(lines):
@@ -73,13 +50,6 @@ def split_to_tagged_lines(text, filename):
 
 
 def join_extended_lines(lines):
-    """Join together any lines which end in an escaped newline.
-
-    This function modifies the given lines object in place.
-
-    lines - List of list of Tagged objects, where each embedded list is a
-    separate line in the input program.
-    """
 
     i = 0
     while i < len(lines):
@@ -103,29 +73,13 @@ def join_extended_lines(lines):
 
 
 def tokenize_line(line, in_comment):
-    """Tokenize the given single line.
 
-    line - List of Tagged objects.
-    in_comment - Whether the first character in this line is part of a
-    C-style comment body.
-    return - List of Token objects, and boolean indicating whether the next
-    character is part of a comment body.
-    """
     tokens = []
 
-    # line[chunk_start:chunk_end] is the section of the line currently
-    # being considered for conversion into a token; this string will be
-    # called the 'chunk'. Everything before the chunk has already been
-    # tokenized, and everything after has not yet been examined
+
     chunk_start = 0
     chunk_end = 0
 
-    # Flag that is set True if the line begins with `#` and `include`,
-    # perhaps with comments and whitespace in between.
-    include_line = False
-    # Flag that is set True if the line is an include directive and the
-    # filename has been seen and succesfully parsed.
-    seen_filename = False
 
     while chunk_end < len(line):
         symbol_kind = match_symbol_kind_at(line, chunk_end)
@@ -216,23 +170,12 @@ def tokenize_line(line, in_comment):
 
 
 def chunk_to_str(chunk):
-    """Convert the given chunk to a string.
 
-    chunk - list of Tagged characters.
-    return - string representation of the list of Tagged characters
-    """
     return "".join(c.c for c in chunk)
 
 
 def match_symbol_kind_at(content, start):
-    """Return the longest matching symbol token kind.
 
-    content - List of Tagged objects in which to search for match.
-    start (int) - Index, inclusive, at which to start searching for a match.
-    returns (TokenType or None) - Symbol token found, or None if no token
-    is found.
-
-    """
     for symbol_kind in symbol_kinds:
         try:
             for i, c in enumerate(symbol_kind.text_repr):
@@ -248,25 +191,7 @@ def match_symbol_kind_at(content, start):
 
 
 def read_string(line, start, delim, null):
-    """Return a lexed string list in input characters.
 
-    Also returns the index of the string end quote.
-
-    line[start] should be the first character after the opening quote of the
-    string to be lexed. This function continues reading characters until
-    an unescaped closing quote is reached. The length returned is the
-    number of input characters that were read, not the length of the
-    string. The latter is the length of the lexed string list.
-
-    The lexed string is a list of integers, where each integer is the
-    ASCII value (between 0 and 128) of the corresponding character in
-    the string. The returned lexed string includes a null-terminator.
-
-    line - List of Tagged objects for each character in the line.
-    start - Index at which to start reading the string.
-    delim - Delimiter with which the string ends, like `"` or `'`
-    null - Whether to add a null-terminator to the returned character list
-    """
     i = start
     chars = []
 
@@ -324,16 +249,7 @@ def read_string(line, start, delim, null):
 
 
 def add_chunk(chunk, tokens):
-    """Convert chunk into a token if possible and add to tokens.
 
-    If chunk is non-empty but cannot be made into a token, this function
-    records a compiler error. We don't need to check for symbol kind tokens
-    here because they are converted before they are shifted into the chunk.
-
-    chunk - Chunk to convert into a token, as list of Tagged characters.
-    tokens (List[Token]) - List of the tokens thusfar parsed.
-
-    """
     if chunk:
         range = Range(chunk[0].p, chunk[-1].p)
 
@@ -385,12 +301,7 @@ def match_number_string(token_repr):
 
 
 def match_identifier_name(token_repr):
-    """Return a string that represents the name of an identifier.
 
-    token_repr - List of Tagged characters.
-    returns (str, or None) - String name of the identifier.
-
-    """
     token_str = chunk_to_str(token_repr)
     if re.match(r"[_a-zA-Z][_a-zA-Z0-9]*$", token_str):
         return token_str

@@ -13,32 +13,13 @@ from musicode.music import music
 
 
 class _ExprNode(nodes.Node):
-    """Base class for representing expression nodes in the AST.
 
-    There are two types of expression nodes, RExprNode and LExprNode.
-    An expression node which can be used as an lvalue (that is, an expression
-    node which can be the argument of an address-of operator) derives from
-    LExprNode. Expression nodes which cannot be used as lvalues derive from
-    RExprNode.
-    """
     def __init__(self):
         """Initialize this ExprNode."""
         super().__init__()
 
     def make_il(self, il_code, symbol_table, c):
-        """Generate IL code for this node and returns ILValue.
 
-        Note that a RExprNode-derived node can never return an ILValue of
-        function or array type because these must decay to addresses,
-        and because an RExprNode does not represent an lvalue, no address
-        can exist.
-
-        il_code - ILCode object to add generated code to.
-        symbol_table - Symbol table for current node.
-        c - Context for current node, as above. This function should not
-        modify this object.
-        return - An ILValue representing the result of this computation.
-        """
         raise NotImplementedError
 
     def make_il_raw(self, il_code, symbol_table, c):
@@ -46,18 +27,12 @@ class _ExprNode(nodes.Node):
         raise NotImplementedError
 
     def lvalue(self, il_code, symbol_table, c):
-        """Return the LValue representing this node.
 
-        If this node has no LValue representation, return None.
-        """
         raise NotImplementedError
 
 
 class _RExprNode(nodes.Node):
-    """Base class for representing an rvalue expression node in the AST.
 
-    An RExprNode-derived node implements only the _make_il function.
-    """
     def __init__(self):  # noqa D102
         nodes.Node.__init__(self)
         self._cache_raw_ilvalue = None
@@ -73,16 +48,6 @@ class _RExprNode(nodes.Node):
 
 
 class _LExprNode(nodes.Node): # 左值：在内存中有明确的地址
-    """Base class for representing an lvalue expression node in the AST.
-
-    An LExprNode-derived node implements only the _lvalue function. This
-    function returns an LValue object representing this node. The
-    implementation of this class automatically sets up the appropriate
-    make_il function which calls the lvalue implementation.
-
-    Note that calling both make_il and make_il_raw for a single node may
-    generate unnecessary or repeated code!
-    """
 
     def __init__(self):  # noqa D102
         super().__init__()
@@ -102,12 +67,7 @@ class _LExprNode(nodes.Node): # 左值：在内存中有明确的地址
         return self._cache_lvalue
 
     def _lvalue(self, il_code, symbol_table, c):
-        """Return an LValue object representing this node.
 
-        Do not call this function directly, because it does not cache the
-        result. Multiple calls to this function may generate multiple error
-        messages or output repeated code to il_code.
-        """
         raise NotImplementedError
 
 
@@ -135,11 +95,7 @@ class Number(_RExprNode):
         self.number = number
 
     def make_il(self, il_code, symbol_table, c):
-        """Make code for a literal number.
 
-        This function does not actually make any code in the IL, it just
-        returns a LiteralILValue that can be used in IL code by the caller.
-        """
         v = int(str(self.number))
 
         if musictypes.int_min <= v <= musictypes.int_max:
@@ -154,12 +110,7 @@ class Number(_RExprNode):
 
 
 class String(_LExprNode):
-    """Expression that is a string.
 
-    chars (List(int)) - String this expression represents, as a null-terminated
-    list of the ASCII representations of each character.
-
-    """
 
     def __init__(self, chars):
         """Initialize Node."""
@@ -186,13 +137,6 @@ class Identifier(_LExprNode):
 
 
 class ParenExpr(nodes.Node):
-    """Expression in parentheses.
-
-    This is implemented a bit hackily. Rather than being an LExprNode or
-    RExprNode like all the other nodes, a paren expression can be either
-    depending on what's inside. So for all function calls to this function,
-    we simply dispatch to the expression inside.
-    """
 
     def __init__(self, expr):
         """Initialize node."""
@@ -213,12 +157,6 @@ class ParenExpr(nodes.Node):
 
 
 class _ArithBinOp(_RExprNode):
-    """Base class for some binary operators.
-
-    Binary operators like +, -, ==, etc. are similar in many respects. They
-    convert their arithmetic arguments, etc. This is a base class for
-    nodes of those types of operators.
-    """
 
     def __init__(self, left, right, op):
         """Initialize node."""
@@ -238,29 +176,11 @@ class _ArithBinOp(_RExprNode):
 
 
     def _arith(self, left, right, il_code):
-        """Return the result of this operation on given arithmetic operands.
 
-        Promotions and conversions are done by caller, so the implementation of
-        this function need not convert operands.
-
-        A default implementation is provided, but this can be overriden by
-        derived classes.
-
-        left - ILValue for left operand
-        right - ILValue for right operand
-        """
-        # out = ILValue(left.ctype)
-        # # [code]
-        # return out
         raise NotImplementedError
 
 class Plus(_ArithBinOp):
-    """Expression that is sum of two expressions.
 
-    left - Expression on left side
-    right - Expression on right side
-    op (Token) - Plus operator token
-    """
 
     def __init__(self, left, right, op):
         """Initialize node."""
@@ -277,12 +197,7 @@ class Plus(_ArithBinOp):
 
 
 class Minus(_ArithBinOp):
-    """Expression that is the difference of two expressions.
 
-    left - Expression on left side
-    right - Expression on right side
-    op (Token) - Plus operator token
-    """
 
     def __init__(self, left, right, op):
         """Initialize node."""
@@ -880,33 +795,6 @@ class ArraySubsc(_LExprNode):
         self.arg = arg
 
     def _lvalue(self, il_code, symbol_table, c):
-        """Return lvalue form of this node.
-
-        We have two main cases here. The first case covers most simple
-        situations, like `array[5]` or `array[x+3]`, and the second case
-        covers more complex situations like `array[4][2]` or an array
-        within a struct.
-
-        In the first case, one of the two operands is a DirectLValue array
-        (i.e. just a variable, not a lookup into another object). This
-        means it will have a spot in memory assigned to it by the register
-        allocator, and we can return a RelativeLValue object from this
-        function. This case corresponds to `matched` being True. A
-        RelativeLValue object usually becomes an assembly command like
-        `[rbp-40+3*rax]`, which is more efficient than manually computing
-        the address like happens in the second case.
-
-        In the second case, neither operand is a DirectLValue array. This is
-        the case for two-dimensional arrays, for example. Here, we proceed
-        naively and get the address for the pointer side. This is a little
-        bit less efficient. Ideally, in cases like `array[2][4]` where the
-        lookup address could be computed at compile-time, we'd be able to do
-        that, but this is not yet supported (TODO).
-
-        """
-
-        # One operand should be pointer to complete object type, and the
-        # other should be any integer type.
 
         head_lv = self.head.lvalue(il_code, symbol_table, c)
         arg_lv = self.arg.lvalue(il_code, symbol_table, c)
@@ -982,12 +870,7 @@ class Args(_RExprNode):
         return ret
 
     def _get_args(self, il_code, symbol_table, c):
-        """Return list of argument ILValues for function this represents.
 
-        Use _get_args_without_prototype when the function this represents
-        has no prototype. This function only performs integer promotion on the
-        arguments before passing them to the called function.
-        """
         final_args = []
         for arg_given in self.args:
             arg = arg_given.make_il(il_code, symbol_table, c)

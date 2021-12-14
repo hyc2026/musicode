@@ -6,21 +6,12 @@ from musicode.errors import CompilerError, Range
 
 
 
-# This is a little bit messy, but worth the repetition it saves. In the
-# parser.py file, the main parse function sets this global variable to the
-# list of tokens. Then, all functions in the parser can reference this
-# variable rather than passing around the tokens list everywhere.
+
 tokens = None
 
 
 class SimpleSymbolTable:
-    """Table to record every declared symbol.
 
-    This is required to parse typedefs in C, because the parser must know
-    whether a given identifier denotes a type or a value. For every
-    declared identifier, the table records whether or not it is a type
-    defnition.
-    """
     def __init__(self):
         self.symbols = []
         self.new_scope()
@@ -40,39 +31,13 @@ symbols = SimpleSymbolTable()
 
 
 class ParserError(CompilerError):
-    """Class representing parser errors.
 
-    amount_parsed (int) - Number of tokens successfully parsed before this
-    error was encountered. This value is used by the Parser to determine which
-    error corresponds to the most successful parse.
-    """
-
-    # Options for the message_type constructor field.
-    #
-    # AT generates a message like "expected semicolon at '}'", GOT generates a
-    # message like "expected semicolon, got '}'", and AFTER generates a message
-    # like "expected semicolon after '15'" (if possible).
-    #
-    # As a very general guide, use AT when a token should be removed, use AFTER
-    # when a token should be to be inserted (esp. because of what came before),
-    # and GOT when a token should be changed.
     AT = 1
     GOT = 2
     AFTER = 3
 
     def __init__(self, message, index, tokens, message_type):
-        """Initialize a ParserError from the given arguments.
 
-        message (str) - Base message to put in the error.
-        tokens (List[Token]) - List of tokens.
-        index (int) - Index of the offending token.
-        message_type (int) - One of self.AT, self.GOT, or self.AFTER.
-
-        Example:
-            ParserError("unexpected semicolon", 10, [...], self.AT)
-               -> CompilerError("unexpected semicolon at ';'", ..., ...)
-               -> "main.c:10: unexpected semicolon at ';'"
-        """
         self.amount_parsed = index
 
         if len(tokens) == 0:
@@ -117,22 +82,7 @@ best_error = None
 
 @contextmanager
 def log_error():
-    """Wrap this context manager around conditional parsing code.
 
-    For example,
-
-    with log_error():
-        [try parsing something]
-        return
-
-    [try parsing something else]
-
-    will run the code in [try parsing something]. If an error occurs,
-    it will be saved and then [try parsing something else] will run.
-
-    The value of e.amount_parsed is used to determine the amount
-    successfully parsed before encountering the error.
-    """
     global best_error, symbols
 
     # back up the global symbols table, so if parsing fails we can reset it
@@ -158,13 +108,7 @@ def token_in(index, kinds):
 
 
 def match_token(index, kind, message_type, message=None):
-    """Raise ParserError if tokens[index] is not of the expected kind.
 
-    If tokens[index] is of the expected kind, returns index + 1.
-    Otherwise, raises a ParserError with the given message and
-    message_type.
-
-    """
     global tokens
     if not message:
         message = f"expected '{kind.text_repr}'"
@@ -185,12 +129,7 @@ def token_range(start, end):
 
 
 def add_range(parse_func):
-    """Return a decorated function that tags the produced node with a range.
 
-    Accepts a parse_* function, and returns a version of the function where
-    the returned node has its range attribute set
-
-    """
     global tokens
 
     def parse_with_range(index, *args):

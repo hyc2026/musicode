@@ -22,13 +22,7 @@ class Node:
         self.r = None
 
     def make_il(self, il_code, symbol_table, c):
-        """Generate IL code for this node.
 
-        il_code - ILCode object to add generated code to.
-        symbol_table - Symbol table for current node.
-        c - Context for current node, as above. This function should not
-        modify this object.
-        """
         raise NotImplementedError
 
 
@@ -57,12 +51,7 @@ class Compound(Node):
         self.items = items
 
     def make_il(self, il_code, symbol_table, c, no_scope=False):
-        """Make IL code for every block item, in order.
 
-        If no_scope is True, then do not create a new symbol table scope.
-        Used by function definition so that parameters can live in the scope
-        of the function body.
-        """
         if not no_scope:
             symbol_table.new_scope()
 
@@ -105,13 +94,7 @@ class ExprStatement(Node):
 
 
 class DeclInfo:
-    """Contains information about the declaration of one identifier.
 
-    identifier - the identifier being declared
-    ctype - the ctype of this identifier
-    storage - the storage class of this identifier
-    init - the initial value of this identifier
-    """
 
 
     def __init__(self, identifier, musictype, range,
@@ -123,11 +106,7 @@ class DeclInfo:
         self.param_names = param_names
 
     def process(self, il_code, symbol_table, c):
-        """Process given DeclInfo object.
 
-        This includes error checking, adding the variable to the symbol
-        table, and registering it with the IL.
-        """
         if not self.identifier:
             err = "missing identifier name in declaration"
             raise CompilerError(err, self.range)
@@ -144,12 +123,7 @@ class DeclInfo:
             self.do_init(var, il_code, symbol_table, c)
 
     def do_init(self, var, il_code, symbol_table, c):
-        """Create code for initializing given variable.
 
-        Caller must check that this object has an initializer.
-        """
-        # little bit hacky, but will be fixed when full initializers are
-        # implemented shortly
 
         init = self.init.make_il(il_code, symbol_table, c)
 
@@ -168,12 +142,7 @@ class DeclInfo:
 
 
 class Declaration(Node):
-    """Line of a general variable declaration(s).
 
-    node (decl_nodes.Root) - a declaration tree for this line
-    body (Compound(Node)) - if this is a function definition, the body of
-    the function
-    """
 
     def __init__(self, node):
         """Initialize node."""
@@ -191,12 +160,7 @@ class Declaration(Node):
                 info.process(il_code, symbol_table, c)
 
     def set_self_vars(self, il_code, symbol_table, c):
-        """Set il_code, symbol_table, and context as attributes of self.
 
-        Helper function to prevent us from having to pass these three
-        arguments into almost all functions in this class.
-
-        """
         self.il_code = il_code
         self.symbol_table = symbol_table
         self.c = c
@@ -220,15 +184,7 @@ class Declaration(Node):
         return out
 
     def make_musictype(self, decl, prev_ctype):
-        """Generate a ctype from the given declaration.
 
-        Return a `ctype, identifier token` tuple.
-
-        decl - Node of decl_nodes to parse. See decl_nodes.py for explanation
-        about decl_nodes.
-        prev_ctype - The ctype formed from all parts of the tree above the
-        current one.
-        """
         if isinstance(decl, decl_nodes.Array):
             new_ctype = self._generate_array_musictype(decl, prev_ctype)
         elif isinstance(decl, decl_nodes.Identifier):
@@ -257,16 +213,7 @@ class Declaration(Node):
 
 
     def make_specs_musictype(self, specs):
-        """Make a ctype out of the provided list of declaration specifiers.
 
-        any_dec - Whether these specifiers are used to declare a variable.
-        This value is important because `struct A;` has a different meaning
-        than `struct A *p;`, since the former forward-declares a new struct
-        while the latter may reuse a struct A that already exists in scope.
-
-        Return a `ctype, storage class` pair, where storage class is one of
-        the above values.
-        """
         spec_range = specs[0].r + specs[-1].r
 
 

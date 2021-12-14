@@ -22,13 +22,6 @@ assignment_operator::= "=" | "*=" | "/=" | "%=" | "+=" | "<<=" | ">>=" | "&=" | 
 """
 @add_range
 def parse_assignment(index):
-    """Parse an assignment expression."""
-
-    # This is a slight departure from the official grammar. The standard
-    # specifies that a program is syntactically correct only if the
-    # left-hand side of an assignment expression is a unary expression. But,
-    # to provide more helpful error messages, we permit the left side to be
-    # any non-assignment expression.
 
     # left, index = parse_conditional(index) # E Op E Op E Op ... E，就这个语法，先parse个E，然后看下一个是不是OP，是的话接着parse E。conditional是优先级最低的
     left, index = parse_equality(index) # E Op E Op E Op ... E，就这个语法，先parse个E，然后看下一个是不是OP，是的话接着parse E。conditional是优先级最低的

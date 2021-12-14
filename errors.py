@@ -1,18 +1,7 @@
-"""Objects used for error reporting.
-
-The main executable catches an exception and prints it for the user.
-
-"""
 
 
 class ErrorCollector:
-    """Class that accumulates all errors and warnings encountered.
 
-    We create a global instance of this class so all parts of the compiler can
-    access it and add errors to it. This is kind of janky, but it's much easier
-    than passing an instance to every function that could potentially fail.
-
-    """
 
     def __init__(self):
         """Initialize the ErrorCollector with no issues to report."""
@@ -41,14 +30,7 @@ error_collector = ErrorCollector()
 
 
 class Position:
-    """Class representing a position in source code.
 
-    file (str) - Name of file in which this position is located.
-    line (int) - Line number in file at which this position is located.
-    col (int) - Horizontal column at which this position is located
-    full_line (str) - Full text of the line containing this position.
-    Specifically, full_line[col + 1] should be this position.
-    """
 
     def __init__(self, file, line, col, full_line):
         """Initialize Position object."""
@@ -80,23 +62,10 @@ class Range:
 
 
 class CompilerError(Exception):
-    """Class representing compile-time errors.
 
-    message (str) - User-friendly explanation of the error. Should
-    begin with a lowercase letter.
-    file_name (str) - File name in which the error occurred.
-    line_number (int) - Line number on which the error occurred
-
-    """
 
     def __init__(self, descrip, range=None, warning=False):
-        """Initialize error.
 
-        descrip (str) - Description of the error.
-        range (Range) - Range at which the error appears.
-        warning (bool) - True if this is a warning
-
-        """
         self.descrip = descrip
         self.range = range
         self.warning = warning

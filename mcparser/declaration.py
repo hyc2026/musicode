@@ -1,12 +1,3 @@
-"""Parser logic that parses declaration nodes.
-
-The functions in this file that have names beginning with an underscore are
-to be considered implementation details of the declaration parsing. That is,
-they are helpers for the other functions rather than meant to be used
-directly. The primary purpose for this distinction is to enhance parser
-readablity.
-
-"""
 
 import musicode.musictypes as musictypes
 from musicode.errors import error_collector, CompilerError
@@ -19,16 +10,9 @@ from musicode.mcparser.utils import (add_range, ParserError, match_token, token_
                                  raise_error, log_error, token_in)
 
 
-
-
 @add_range
 def parse_declaration(index):
-    """Parse a declaration into a tree.nodes.Declaration node.
 
-    Example:
-        note a, b
-
-    """
     node, index = parse_decls_inits(index)
     return nodes.Declaration(node), index # nodes.Declatation是为make_il准备的，继承自Node， parse_decls_inits返回的node主要存的是声明的内容（标识符，类型等）
 
@@ -38,19 +22,9 @@ post_declarator::= "["constant_expression"]"
 """
 @add_range
 def parse_declarator(index):
-    """Parse the tokens that comprise a declarator.
 
-    A declarator is the part of a declaration that comes after the
-    declaration specifiers (note, chord, etc.) but before any initializers.
-    For example, in `note a` the declarator is `a`.
-
-
-    Returns a decl_nodes.Node and index.
-    """
     end = _find_decl_end(index)
     return _parse_declarator(index, end), end
-
-
 
 
 """
@@ -67,21 +41,7 @@ post_declarator::= "["constant_expression"]"
 @add_range
 def parse_decls_inits(index, parse_inits=True):
 
-    """Parse declarations and initializers into a decl_nodes.Root node.
 
-    Ex:
-       note a = 'C5', b = 'B4';
-
-    The decl_nodes node can be used by the caller to create a
-    tree.nodes.Declaration node, and the decl_nodes node is traversed during
-    the IL generation step to convert it into an appropriate musictype.
-
-    If `parse_inits` is false, do not permit initializers.
-
-    Note that parse_declaration is simply a wrapper around this function. The
-    reason this logic is not in parse_declaration directly is so that struct
-    member list parsing can reuse this logic.
-    """
     specs, index = parse_decl_specifiers(index)
 
     # If declaration specifiers are followed directly by semicolon
@@ -118,12 +78,7 @@ def parse_decls_inits(index, parse_inits=True):
 declaration_specifier::= "note" | "chord"
 """
 def parse_decl_specifiers(index, _spec_qual=False):
-    """Parse a declaration specifier list.
 
-    Examples:
-        note
-        chord
-    """
     type_specs = set(musictypes.simple_types.keys())
 
     specs = []
@@ -143,13 +98,7 @@ def _find_pair_forward(index,
                        open=token_kinds.open_paren,
                        close=token_kinds.close_paren,
                        mess="mismatched parentheses in declaration"):
-    """Find the closing parenthesis for the opening at given index.
 
-    index - position to start search, should be of kind `open`
-    open - token kind representing the open parenthesis
-    close - token kind representing the close parenthesis
-    mess - message for error on mismatch
-    """
     depth = 0
     for i in range(index, len(p.tokens)):
         if p.tokens[i].kind == open:
@@ -169,10 +118,7 @@ def _find_pair_backward(index,
                         open=token_kinds.open_paren,
                         close=token_kinds.close_paren,
                         mess="mismatched parentheses in declaration"):
-    """Find the opening parenthesis for the closing at given index.
 
-    Same parameters as _find_pair_forward above.
-    """
     depth = 0
     for i in range(index, -1, -1):
         if p.tokens[i].kind == close:
@@ -189,12 +135,7 @@ def _find_pair_backward(index,
 
 
 def _find_decl_end(index):
-    """Find the end of the declarator that starts at given index.
 
-    If a valid declarator starts at the given index, this function is
-    guaranteed to return the correct end point. Returns an index one
-    greater than the last index in this declarator.
-    """
     if token_is(index, token_kinds.identifier) :
         return _find_decl_end(index + 1)
     elif token_is(index, token_kinds.open_sq_brack):
@@ -209,11 +150,7 @@ def _find_decl_end(index):
 
 
 def _parse_declarator(start, end):
-    """Parses a declarator between start and end.
 
-    Expects the declarator to start at start and end at end-1 inclusive.
-    Prefer to use the parse_declarator function externally over this function.
-    """
     decl = _parse_declarator_raw(start, end)
     decl.r = p.tokens[start].r + p.tokens[end - 1].r
     return decl
