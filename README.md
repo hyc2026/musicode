@@ -12,7 +12,13 @@
 
    pip install -r requirements.txt
 
-2. 运行代码，在musicode文件夹所在路径
+2. 将 lilypond-2.23.5-1.mingw.exe 所在路径加入环境变量(用于生成五线谱)
+
+3. 运行代码，在musicode文件夹所在路径
 
    python -m musicode musicode/test.mc
+
+   控制台输出中间代码及语法树
+
+   生成 `可播放的midi文件：temp.mid` 以及 `五线谱`
 
