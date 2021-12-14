@@ -119,7 +119,7 @@ def process_mc_file(file):
     ast_root.make_il(il_code, symbol_table, Context())
     strs = ordered(ast_root)
     strs += ";"
-    print(strs)
+    # print(strs)
     t = Tree(strs, format=1)
     print(t)
     if not error_collector.ok():
