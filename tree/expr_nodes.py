@@ -939,6 +939,24 @@ class PlayExpr(_RExprNode):
         return expr
 
 
+class ScoreExpr(_RExprNode):
+    """Node representing sizeof with expression operand.
+
+    expr (_ExprNode) - the expression to get the size of
+    """
+    def __init__(self, expr):
+        super().__init__()
+        self.expr = expr
+
+    def make_il(self, il_code, symbol_table, c):
+        """Return a compile-time integer literal as the expression size."""
+
+        dummy_il_code = il_code.copy()
+        expr = self.expr.make_il_raw(dummy_il_code, symbol_table, c)
+        music.gen_score(expr.py_value)
+        return expr
+
+
 
 class Args(_RExprNode):
     """Function call.

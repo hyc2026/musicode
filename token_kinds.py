@@ -14,6 +14,7 @@ setting_kw = TokenKind("setting", keyword_kinds)
 
 play_kw = TokenKind("play", keyword_kinds)
 print_kw = TokenKind("print", keyword_kinds)
+score_kw = TokenKind("score", keyword_kinds)
 while_kw = TokenKind("while", keyword_kinds)
 case_kw = TokenKind("case", keyword_kinds)
 if_kw = TokenKind("if", keyword_kinds)

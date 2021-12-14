@@ -184,7 +184,10 @@ def parse_unary(index):
         with log_error():
             node, index = parse_unary(index + 1)
             return expr_nodes.PlayExpr(node), index
-
+    elif token_is(index, token_kinds.score_kw):
+        with log_error():
+            node, index = parse_unary(index + 1)
+            return expr_nodes.ScoreExpr(node), index
     else:
         return parse_postfix(index)
 

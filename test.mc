@@ -45,6 +45,7 @@ chord accompany = Cmaj - 12 | Fmaj - 24 | Gmaj1 - 24 | Amin - 24 | Gmaj2 - 12;
 piece c;
 c = {{melody1, melody2, accompany}, {74, 69, 1}, 60};
 play(c);
+score(c);
 
 /*chord melody = {"G4", "A4", "C5", "D5", "D5"};
 melody = melody % {{1/4+1/8, 1/16, 1/16, 1/8, 7/8}, {1/4+1/8, 1/16, 1/16, 1/8, 7/8}};
