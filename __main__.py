@@ -13,7 +13,7 @@ from musicode.il_gen import ILCode, SymbolTable, Context
 from musicode.tree.nodes import Root as nRoot
 from musicode.tree.nodes import Declaration, ExprStatement, Compound
 from musicode.tree.decl_nodes import Root, Identifier
-from musicode.tree.expr_nodes import Args, _RExprNode, Number, PlayExpr, String, ParenExpr
+from musicode.tree.expr_nodes import Args, _RExprNode, Number, PlayExpr, String, ParenExpr, ScoreExpr
 from musicode.tree.expr_nodes import Identifier as eIdentifier
 
 def main():
@@ -81,6 +81,8 @@ def ordered(node):
         strs += str(node.identifier)
     elif isinstance(node, PlayExpr):
         strs += "play" + ordered(node.expr)
+    elif isinstance(node, ScoreExpr):
+        strs += "score" + ordered(node.expr)
     elif isinstance(node, String):
         for i in node.chars:
             if i:
