@@ -3103,28 +3103,22 @@ def gen_abjad_str(chord):
     cnt = 0
     for i, n in enumerate(chord.notes):
 
-        # if chord.interval[i] == 0:
-        #     cnt += 1
-        #     if cnt == len(strs):
-        #         strs.append("")
-        # else:
-        #     cnt = 0
-        str = strs[cnt]
         if chord.interval[i] == 0:
             cnt += 1
             if cnt == len(strs):
                 strs.append("")
         else:
             cnt = 0
+        str = strs[cnt]
         cur = ""
         cur_name = n.name.lower()
         cur_name = cur_name.replace('#', 's')
         cur_name = cur_name.replace('b', 'f')
         cur_num = gen_pitch_suffix(n.num)
         durations = split_duration(n.duration).keys()
-        for i, duration in enumerate(durations):
+        for j, duration in enumerate(durations):
             cur += "{}{}{}".format(cur_name, cur_num, duration)
-            if i == 0:
+            if j == 0:
                 cur += '('
             cur += " "
         if cur[-2] != '(':
@@ -3133,6 +3127,23 @@ def gen_abjad_str(chord):
             cur = cur[:-2] + " "
         str += cur
         strs[cnt] = str
+    return strs
+
+
+def gen_abjad_str_v2(chord):
+    strs = [" <"]
+    for i, n in enumerate(chord.notes):
+
+        cur_name = n.name.lower()
+        cur_name = cur_name.replace('#', 's')
+        cur_name = cur_name.replace('b', 'f')
+        cur_num = gen_pitch_suffix(n.num)
+        strs[0] += "{}{} ".format(cur_name, cur_num)
+    strs[0] += ">"
+
+    durations = split_duration(chord.notes[0].duration).keys()
+    strs[0] += str(list(durations)[0])
+
     return strs
 
 
@@ -3149,15 +3160,15 @@ def gen_score(p):
         # LilyPond input
 
         voices = []
-        strs = gen_abjad_str(chord)
+        strs = gen_abjad_str_v2(chord)
         for str in strs:
             voice = abjad.Voice()
             voice.extend(str)
             voices.append(voice)
             # Attach time signatures:
             time_signature = abjad.TimeSignature((4, 4))
-            note = abjad.select(voice).note(0)
-            abjad.attach(time_signature, note)
+            # note = abjad.select(voice).note(0)
+            # abjad.attach(time_signature, note)
 
             # Attach a clef and final bar line:
 
@@ -3174,8 +3185,8 @@ def gen_score(p):
             # abjad.attach(markup, note)
 
             # Override LilyPond’s hairpin formatting:
-            note = abjad.select(voice).note(-2)
-            abjad.override(note).hairpin.to_barline = False
+            # note = abjad.select(voice).note(-2)
+            # abjad.override(note).hairpin.to_barline = False
         staff = abjad.Staff(voices, name="staff_{}".format(i), simultaneous=True)
         staffs.append(staff)
 

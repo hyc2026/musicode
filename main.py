@@ -15,7 +15,7 @@ def main():
 
     arguments = get_arguments()
 
-    arguments.files = ['assets/bach.mc']
+    arguments.files = ['assets/operator.mc']
 
     objs = []
     for file in arguments.files:
