@@ -93,3 +93,30 @@
   翻译程序就是将源语言写的源程序翻译成目标语言。
   编译程序就是将高级语言翻译成低级语言，所以说编译程序是翻译程序的特殊情况。
   ```
+
+
+==增加部分与原语法的潜在冲突分析（正交、正规等）==
+
+musicode与python的对比：
+
+如果直接使用python进行编写，需要自己创建类，重载运算符？
+
+新增了四种数据类型以及重新定义了操作符的功能
+
+``` python
+class note:
+    def __init__(self, name, num=4, duration=0.25, volume=100, channel=None):
+        self.name = name
+        self.num = num
+        self.duration = duration
+        volume = int(volume)
+        if volume > 127:
+            volume = 127
+        self.volume = volume
+        self.channel = channel
+
+a5 = note("A5")
+```
+
+musicode
+note a5 = "A5";
