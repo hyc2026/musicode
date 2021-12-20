@@ -3103,13 +3103,19 @@ def gen_abjad_str(chord):
     cnt = 0
     for i, n in enumerate(chord.notes):
 
+        # if chord.interval[i] == 0:
+        #     cnt += 1
+        #     if cnt == len(strs):
+        #         strs.append("")
+        # else:
+        #     cnt = 0
+        str = strs[cnt]
         if chord.interval[i] == 0:
             cnt += 1
             if cnt == len(strs):
                 strs.append("")
         else:
             cnt = 0
-        str = strs[cnt]
         cur = ""
         cur_name = n.name.lower()
         cur_name = cur_name.replace('#', 's')
