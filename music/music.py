@@ -980,7 +980,7 @@ def read_other_messages(message, other_messages, time, track_ind):
 
 
 def write(current_chord,
-          bpm=80,
+          bpm=120,
           track_ind=0,
           channel=0,
           start_time=None,
@@ -3099,10 +3099,21 @@ def gen_pitch_suffix(num):
     return res
 
 def gen_abjad_str(chord):
-    str = ""
-    for n in chord.notes:
+    strs = [""]
+    cnt = 0
+    for i, n in enumerate(chord.notes):
+
+        if chord.interval[i] == 0:
+            cnt += 1
+            if cnt == len(strs):
+                strs.append("")
+        else:
+            cnt = 0
+        str = strs[cnt]
         cur = ""
         cur_name = n.name.lower()
+        cur_name = cur_name.replace('#', 's')
+        cur_name = cur_name.replace('b', 'f')
         cur_num = gen_pitch_suffix(n.num)
         durations = split_duration(n.duration).keys()
         for i, duration in enumerate(durations):
@@ -3115,7 +3126,8 @@ def gen_abjad_str(chord):
         else:
             cur = cur[:-2] + " "
         str += cur
-    return str
+        strs[cnt] = str
+    return strs
 
 
 import abjad
@@ -3125,48 +3137,49 @@ def gen_score(p):
     num = len(chords)
     instruments = p.instruments_list
 
-    # Make an empty score
-    voices = []
+
     staffs = []
-    for i in range(num):
-        voice = abjad.Voice(name="voice_{}".format(i))
-        staff = abjad.Staff([voice], name="staff_{}".format(i))
-        voices.append(voice)
+    for i, chord in enumerate(chords):
+        # LilyPond input
+
+        voices = []
+        strs = gen_abjad_str(chord)
+        for str in strs:
+            voice = abjad.Voice()
+            voice.extend(str)
+            voices.append(voice)
+            # Attach time signatures:
+            time_signature = abjad.TimeSignature((4, 4))
+            note = abjad.select(voice).note(0)
+            abjad.attach(time_signature, note)
+
+            # Attach a clef and final bar line:
+
+            if i != 0 and i == num - 1:
+                clef = abjad.Clef("bass")
+                note = abjad.select(voice).note(0)
+                abjad.attach(clef, note)
+
+            # Attach instruments
+            instrument = 'Piano' if 'Piano' in instruments[i] else instruments[i]
+            instrument = fr'\markup {{ "{instrument}" }}'
+            # markup = abjad.Markup(instrument, direction=abjad.Up, literal=True)
+            # note = abjad.select(voice).note(0)
+            # abjad.attach(markup, note)
+
+            # Override LilyPond’s hairpin formatting:
+            note = abjad.select(voice).note(-2)
+            abjad.override(note).hairpin.to_barline = False
+        staff = abjad.Staff(voices, name="staff_{}".format(i), simultaneous=True)
         staffs.append(staff)
+
     all_staff = abjad.StaffGroup(name="staff_all")
     all_staff.extend(staffs)
     score = abjad.Score([all_staff], name="Score")
 
-    for i, chord in enumerate(chords):
-        # LilyPond input
-        str = gen_abjad_str(chord)
-        # Extend voice
-        voices[i].extend(str)
-        # Attach time signatures:
-        time_signature = abjad.TimeSignature((4, 4))
-        note = abjad.select(voices[i]).note(0)
-        abjad.attach(time_signature, note)
-
-        # Attach a clef and final bar line:
-
-        if i != 0 and i == num - 1:
-            clef = abjad.Clef("bass")
-            note = abjad.select(voices[i]).note(0)
-            abjad.attach(clef, note)
-
-        # Attach instruments
-        instrument = 'Piano' if 'Piano' in instruments[i] else instruments[i]
-        instrument = fr'\markup {{ "{instrument}" }}'
-        markup = abjad.Markup(instrument, direction=abjad.Up, literal=True)
-        note = abjad.select(voices[i]).note(0)
-        abjad.attach(markup, note)
-
-        # Override LilyPond’s hairpin formatting:
-        note = abjad.select(voices[i]).note(-2)
-        abjad.override(note).hairpin.to_barline = False
-    bar_line = abjad.BarLine("|.")
-    note = abjad.select(voices[0]).note(-1)
-    abjad.attach(bar_line, note)
+    # bar_line = abjad.BarLine("|.")
+    # note = abjad.select(voices[0]).note(-1)
+    # abjad.attach(bar_line, note)
     abjad.show(score)
 
 
