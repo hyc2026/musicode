@@ -10,4 +10,5 @@ gen
 __pycache__
 */__pycache__
 *.docx
+~$*
 
