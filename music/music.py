@@ -3160,7 +3160,7 @@ def gen_score(p):
         # LilyPond input
 
         voices = []
-        strs = gen_abjad_str_v2(chord)
+        strs = gen_abjad_str(chord)
         for str in strs:
             voice = abjad.Voice()
             voice.extend(str)
